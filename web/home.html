@@ -1,0 +1,537 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" />
+    <style>
+        #timelineTable,
+        #resultTable {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #timelineTable td,
+        #timelineTable th,
+        #resultTable td,
+        #resultTable th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #timelineTable tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #resultTable tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #timelineTable tr:hover {
+            background-color: #ddd;
+        }
+
+        #resultTable tr:hover {
+            background-color: #ddd;
+        }
+
+        #timelineTable th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #fff;
+            color: black;
+        }
+
+        #resultTable th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #fff;
+            color: black;
+        }
+
+        td.details-control {
+            background: url("http://datatables.net/examples/resources/details_open.png") no-repeat center center;
+            cursor: pointer;
+        }
+
+        tr.shown td.details-control {
+            background: url('http://datatables.net/examples/resources/details_close.png') no-repeat center center;
+        }
+
+        /* body::-webkit-scrollbar {
+            display: none;
+        } */
+
+        body {
+            /* background-image: linear-gradient(to bottom, #ccc 17%, #F5F5F5 0%); */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+            font-family: arial, "Microsoft JhengHei", "微軟正黑體", sans-serif !important;
+            overflow-x: hidden;
+
+        }
+
+        table td,
+        th {
+            border: 0px !important;
+        }
+
+        table tr:nth-child(odd) {
+            background-color: #E3E3E3;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #F6F6F6;
+        }
+
+        .btn-success {
+            background-color: #4FA393 !important;
+        }
+    </style>
+    <script>
+        async function searchTwitchRecord() {
+            let viewRecordListElement = $('#viewRecordList');
+            let keyword = document.getElementById("txt_keyword").value;
+            let date_start = $("#search_startDate");
+            let date_end = $("#search_endDate");
+            let entityName = 'cr98a_nurse_twitchrecords';
+            let filter = [];
+            if (viewRecordListElement.prop('selectedIndex') == 0) {
+
+                let userList = getCaseFromViewCaseFilter(viewRecordListElement, filterCase);
+                $.each(userList, function (i, v) {
+                    filter.push({ division: "or", column: "cr98a_hkid", operator: "eq", value: v.cr98a_hkid, type: "Text" })
+                });
+                if (filter.length > 0) {
+                    filter.unshift({ custom: '(' });
+                    filter.push({ custom: ')' });
+                }
+
+            } else {
+                selectedCaseRecord = filterCase.find(e => {
+                    return e.cr98a_userinformationid == viewRecordListElement.val();
+                });
+                filter.push({ division: "and", column: "cr98a_hkid", operator: "eq", value: selectedCaseRecord.cr98a_hkid, type: "Text" })
+            }
+            if (isDate(date_start.val())) {
+                filter.push({ division: "and", column: "cr98a_incidentdate", operator: "ge", value: moment(date_start.val()).format(dateFormatInGlobal), type: "Text" })
+            }
+            if (isDate(date_end.val())) {
+                filter.push({ division: "and", column: "cr98a_incidentdate", operator: "le", value: moment(date_end.val()).format(dateFormatInGlobal), type: "Text" })
+            }
+
+            let orderby = 'cr98a_incidentdate desc';
+
+            await queryEntity({ entity: entityName, filter: filter, orderby: orderby }).then(value => {
+                let result = value;
+
+                let output = '';
+
+                let printRecordTable = '';
+
+                let tr_color = "#F9F9F9";
+
+                $('#twitchRecordTable').empty();
+
+                $('#printRecordTable thead').empty();
+                $('#printRecordTable tbody').empty();
+
+                if (keyword != '') {
+                    result = result.filter(function (e) {
+                        for (var i = 0; i < Object.keys(e).length; i++) {
+                            if (!IsNull(e[Object.keys(e)[i]])) {
+                                if (!e[Object.keys(e)[i]].toString().includes('@')) {
+                                    if (e[Object.keys(e)[i]].toString().includes(keyword)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                if (result.length > 0) {
+
+                    result = sortDataAsPeopleFilter(result, filterCase, 'cr98a_name');
+
+                    for (let i = 0; i < result.length; i++) {
+
+                        if (result[i]["cr98a_recordstatus"] != "已刪除") {
+
+                            console.log('result[' + i + ']: ...');
+                            console.log(result[i]);
+
+                            if (i % 2 == 0) {
+                                tr_color = "#FFFFFF";
+                            }
+
+                            var nurse_twitchrecordid = result[i]["cr98a_nurse_twitchrecordid"];
+
+
+                            output += '<table class="table table-longer table-bordered" style="margin-top: 20px; text-align: center;">';
+
+                            output += "<tr>";
+                            output += `<th class="print-remove"></th>`;
+                            output += "<th>事發日期</th>";
+                            output += "<th>時間</th>";
+                            output += "<th>地點</th>";
+                            output += "<th>持續時間(秒)</th>";
+                            output += "<th>當值護士</th>";
+                            output += "<th>狀態</th>";
+                            output += `<th class="print-remove">功能</th>`;
+                            output += "</tr>";
+
+                            output += "<tr style='background-color: #F9F9F9;'>";
+
+                            output += `<td class="print-remove">`;
+                            output += '<input class="checkbox" type="checkbox" name="cb_viewRecord" value="' + nurse_twitchrecordid + '">';
+                            output += "</td>";
+
+                            // incident date
+                            output += '<td>';
+                            //output += '<input class="form-control" type="date" id="cr98a_incidentdate_' + nurse_twitchrecordid + '" value="' + result[i]["cr98a_incidentdate"].split('T')[0] + '" readonly >';
+                            output += '<input class="form-control" type="text" name="datepicker" id="cr98a_incidentdate_' + nurse_twitchrecordid + '" value="' + TimeFormatter(result[i]["cr98a_incidentdate"]) + '" readonly autocomplete="off" placeholder="YYYY/MM/DD">';
+                            output += '</td>';
+
+                            // time ...
+                            output += '<td>';
+                            output += '<input class="form-control" type="time" id="cr98a_time_' + nurse_twitchrecordid + '" value="' + result[i]["cr98a_time"] + '" readonly >';
+                            output += '</td>';
+
+                            // address ...
+                            output += '<td>';
+                            output += '<input class="form-control" type="text" id="cr98a_address_' + nurse_twitchrecordid + '" value="' + result[i]["cr98a_address"] + '" readonly >';
+                            output += '</td>';
+
+                            // duration ...
+                            output += '<td>';
+                            output += '<input class="form-control" type="number" id="cr98a_duration_' + nurse_twitchrecordid + '" value="' + result[i]["cr98a_duration"] + '" readonly >';
+                            output += '</td>';
+
+                            // onduty nurse ...
+                            output += '<td>';
+                            output += '<input class="form-control" type="text" id="cr98a_ondutynurse_' + nurse_twitchrecordid + '" value="' + result[i]["cr98a_ondutynurse"] + '" readonly >';
+                            output += '</td>';
+
+
+                            // edit record status...
+                            output += '<td style="text-align: center;">';
+
+                            output += '<select class="form-control" id="cr98a_recordstatus_' + nurse_twitchrecordid + '" disabled>';
+
+                            if (result[i]["cr98a_recordstatus"] == "草擬") {
+                                output += '<option value="草擬" selected>草擬</option>';
+                                output += '<option value="提交">提交</option>';
+                            } else {
+                                output += '<option value="草擬">草擬</option>';
+                                output += '<option value="提交" selected>提交</option>';
+                            }
+
+                            output += '</select>';
+
+                            output += '</td>';
+
+                            if (result[i]["cr98a_recordstatus"] == "草擬") {
+                                // edit button ... 
+                                output += '<td class="print-remove" style="text-align: center;" id="btn_editRecord_' + nurse_twitchrecordid + '">';
+                                output += "<button style='width: 100%;' type='button' class='btn btn-light' onclick='editTwitchRecord(\"" + nurse_twitchrecordid + "\")'>";
+                                output += '<img src="/WebResources/new_nurse_icon_pen">';
+                                output += '</button>';
+                                output += '<br/>';
+                                output += '<label style="margin-top: 10px">編輯</label>';
+                                output += '</td>';
+                                // save button ... 
+                                output += '<td class="print-remove" style="text-align: center; display: none;" id="btn_saveEditRecord_' + nurse_twitchrecordid + '">';
+                                output += "<button style='width: 100%;' type='button' class='btn btn-light' onclick='saveEditTwitchRecord(\"" + nurse_twitchrecordid + "\")'>";
+                                output += '<img src="/WebResources/new_icon_nurse_save">';
+                                output += '</button>';
+                                output += '<br/>';
+                                output += '<label style="margin-top: 10px">儲存</label>';
+                                output += '</td>';
+
+                            } else {
+                                output += '<td class="print-remove"></td>';
+                            }
+                            output += '</tr>';
+                            output += "<tr style='background-color: #F9F9F9;'>";
+                            output += "<th>情況描述</th>";
+                            output += "<td colspan='7' style='text-align: left;'>";
+                            output += '<textarea class="form-control" id="cr98a_situationdescription_' + nurse_twitchrecordid + '" style="resize: none;" data-autoresize rows="1" placeholder="" disabled>' + result[i]["cr98a_situationdescription"] + '</textarea>';
+                            output += "</td>";
+                            output += "</tr>";
+                            output += '</table>';
+                        }
+                    }
+                } else {
+                    output += '<table class="table table-longer table-bordered" style="margin-top: 20px; text-align: center;">';
+                    output += '<tr style="text-align: center;">';
+                    output += '<td colspan="7">';
+                    output += '沒有記錄';
+                    output += '</td>';
+                    output += '</tr>';
+                    output += '</table>';
+                }
+                $("#twitchRecordTable").append(output);
+                setUpKeyupEvent();
+                //$("#printRecordTable").show();
+            }).catch(function (e) {
+                console.log(e);
+            });
+        }
+    </script>
+</head>
+
+<body style="background-color: #fff7e6; overflow-wrap: break-word;">
+
+    <div class="row justify-content-between" style="height: 120px; font-weight: bold; position: relative; background-image: url('/WebResources/new_icon_d365_bg'); 
+	background-repeat: no-repeat; background-size: 1538px 120px;">
+
+        <div class="col-6" style="margin-left: 30px;">
+
+            <div class="row">
+                <div style="margin-left: 10px; margin-top: 10px;">
+                    <img src="/WebResources/new_fu_hong_icon_png" width="150px" height="50px" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col" style="font-size:22px;">
+                    <label id="staffDepartment" style="margin-top: 5px; color: #905825;">
+                        扶康會服務使用者資料
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-4" style="margin-left: 10px;">
+
+            <div class="row" style="margin-top: 10px; width: 100%; font-size: 14px; margin-top: 20px;">
+
+                <div class="col-5"></div>
+
+                <div class="col-5" style="color: #73797F;">
+                    <div class="row">
+                        <div class="col">
+                            <label id="userName"></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label id="userEmail"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-2">
+                    <img src="/WebResources/new_sampleAccountIcon" width="40px" height="40px" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-left: 50px; margin-right: 50px;">
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-12">
+                <h3 style="line-height: 0.4;">
+                    <label id="filterYear">抽搐記錄</label>
+                </h3>
+            </div>
+        </div>
+        <div id="recordInputForm" class="row" style="display: none;">
+            <div class="col" style="margin-top: 20px;">
+                <div class="row">
+                    <div id="serviceUserInfo" class="col" style="margin-left: 30px;display:none;">
+                        <span>
+                            <img id="info_icon" src="/WebResources/new_userImageSample" width="40px" height="35px" />
+                        </span>
+                        <label id="info_name"></label>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; background-color: white; width: 100%; padding: 20px;">
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col">
+                            <table class="table">
+                                <tr class="row">
+                                    <th class="mb-auto col-sm-12 col-xl-1">
+                                        <label>服務單位</label>
+                                    </th>
+                                    <td class="mb-auto col-sm-12 col-xl">
+                                        <input class="form-control" type="text" id="cr98a_serviceunit" disabled />
+                                    </td>
+                                    <th class="mb-auto col-sm-12 col-xl-1">
+                                        <label>事發日期<text style="color: red;">*</text></label>
+                                    </th>
+                                    <td class="mb-auto col-sm-12 col-xl">
+                                        <input class="form-control min-width" type="text" name="datepicker"
+                                            style="max-width: 150px;" id="cr98a_incidentdate" autocomplete="off"
+                                            placeholder="YYYY/MM/DD">
+                                    </td>
+                                    <th class="mb-auto col-sm-12 col-xl-1">
+                                        <label>時間<text style="color: red;">*</text></label>
+                                    </th>
+                                    <td class="mb-auto col-sm-12 col-xl">
+                                        <input class="form-control min-width" type="time" id="cr98a_time"
+                                            style="max-width: 150px;">
+                                    </td>
+                                </tr>
+                                <tr class="row">
+                                    <th class="mb-auto col-sm-12 col-xl-1">
+                                        <label>地點<text style="color: red;">*</text></label>
+                                    </th>
+                                    <td class="mb-auto col-sm-12 col-xl">
+                                        <input class="form-control" type="text" id="cr98a_address">
+                                    </td>
+                                    <th class="mb-auto col-sm-12 col-xl-1">
+                                        <label>持續時間(秒)<text style="color: red;">*</text></label>
+                                    </th>
+                                    <td class="mb-auto col-sm-12 col-xl">
+                                        <input class="form-control" type="number" id="cr98a_duration" min="1">
+                                    </td>
+                                    <th class="mb-auto col-sm-12 col-xl-1">
+                                        <label>當值護士<text style="color: red;">*</text></label>
+                                    </th>
+                                    <td class="mb-auto col-sm-12 col-xl">
+                                        <input class="form-control" type="text" id="cr98a_ondutynurse" disabled />
+                                    </td>
+                                </tr>
+                                <tr class="row">
+                                    <th class="mb-auto col-sm-12 col-xl-1">
+                                        <label>情況描述<text style="color: red;">*</text></label>
+                                    </th>
+                                    <td class="mb-auto col-sm-12 col-xl-11" colspan="5">
+                                        <textarea class="form-control" id="cr98a_situationdescription"
+                                            style="width: 100%; resize: none; height: 200px;" data-autoresize
+                                            rows="1"></textarea>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="addRecordButtonGroup" class="row" style="position: sticky;bottom: 0; display: none; margin-top: 20px;">
+            <div class="col">
+                <button id="" style="width: 100%;" type="button" class="btn btn-secondary"
+                    onclick="newTwitchRecord('草擬')">草擬</button>
+            </div>
+            <div class="col">
+                <button id="" style="width: 100%;" type="button" class="btn btn-danger"
+                    onclick="newTwitchRecord('提交')">提交</button>
+            </div>
+            <div class="col">
+                <button id="" style="width: 100%;" type="button" class="btn btn-secondary"
+                    onclick="backToView()">返回</button>
+            </div>
+        </div>
+        <div id="viewHealthRecord" class="row">
+            <div class="col-12" style="margin-top: 20px;">
+                <div style="margin-top: 10px; background-color: white; width: 100%; padding: 20px;">
+                    <div class="row">
+                        <div class="my-sm-1 my-auto col-sm-4 col-xl-1">
+                            <label>個案狀態</label>
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-8 col-xl-2">
+                            <select id="formStatusList" class="form-control">
+                            </select>
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-4 col-xl-1">
+                            <label>服務單位</label>
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-8 col-xl-2">
+                            <select id="serviceUnitList" class="form-control">
+                            </select>
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-4 col-xl-1">
+                            <label>服務使用者</label>
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-8 col-xl-5">
+                            <select id="viewRecordList" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="my-sm-1 my-auto col-sm-4 col-xl-1">
+                            <label>日期</label>
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-4 col-xl-2">
+                            <!-- <input id="search_startDate" type="date" class="form-control" /> -->
+                            <input class="form-control" type="text" name="datepicker" id="search_startDate"
+                                autocomplete="off" placeholder="YYYY/MM/DD">
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-1 col-xl-1">
+                            <label>至</label>
+                        </div>
+                        <div class="my-sm-1 my-auto col-sm-3 col-xl-2">
+                            <!-- <input id="search_endDate" type="date" class="form-control" /> -->
+                            <input class="form-control" type="text" name="datepicker" id="search_endDate"
+                                autocomplete="off" placeholder="YYYY/MM/DD">
+                        </div>
+                        <div class="my-sm-1 mb-auto col-sm-6 col-xl-2">
+                            <button id="btn_search" style="width: 100%;" type="button"
+                                class="btn btn-N-success btn-success" onclick="searchTwitchRecord()"><i
+                                    class="fa fa-lg fa-search"></i> 查找</button>
+                        </div>
+                        <div class="my-sm-1 mb-auto col-sm-6 col-xl-2">
+                            <button id="btn_reset" style="width: 100%;" type="button"
+                                class="btn btn-N-success btn-success" onclick="resetSearchRecord()"><i
+                                    class="fa fa-eraser"></i> 重設</button>
+                        </div>
+
+                        <div class="my-sm-1 mb-auto col-sm-6 col-xl-2">
+                            <button id="btn_print" style="width: 100%;" type="button"
+                                class="btn btn-N-success btn-success">
+                                <img src="/WebResources/new_nurse_icon_white_printer">
+                                列印
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="my-sm-1 mb-auto col-sm-4 col-xl-1">
+                            <label>關鍵字</label>
+                        </div>
+                        <div class="my-sm-1 mb-auto col-sm-8 col-xl-5">
+                            <input id="txt_keyword" class="form-control" type="text">
+                        </div>
+                        <div class="my-sm-1 mb-auto col-sm-6 col-xl-2">
+                            <button id="btn_newRecord" style="width: 100%;" type="button"
+                                class="btn btn-N-success btn-success" onclick=""><i class="fa fa-pencil-square-o"></i>
+                                新增</button>
+                        </div>
+                        <div class="my-sm-1 mb-auto col-sm-6 col-xl-2">
+                            <button id="btn_copy" style="width: 100%;" type="button"
+                                class="btn btn-N-success btn-success" onclick="">
+                                <img src="/WebResources/new_nurse_icon_white_copy">
+                                複製
+                            </button>
+                        </div>
+   
+                        <div class="my-sm-1 mb-auto col-sm-12 col-xl-2">
+                            <button id="btn_delete" style="width: 100%;" type="button" class="btn btn-danger"
+                                onclick="">
+                                <img src="/WebResources/new_nurse_icon_white_cross">
+                                刪除
+                            </button>
+                        </div>
+                    </div>
+                    <!--table is here-->
+                    <div id="twitchRecordTable" class="table-responsive" style="margin-top: 10px; text-align: center;">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
