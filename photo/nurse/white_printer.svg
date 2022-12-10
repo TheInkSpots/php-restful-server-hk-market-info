@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="22.698" height="22.994" viewBox="0 0 22.698 22.994">
+  <g id="Circle_Button" data-name="Circle Button" transform="translate(-3 -3)">
+    <g id="Icon" transform="translate(4 4)">
+      <path id="Path" d="M12,11.244V4H24.419v7.244" transform="translate(-7.86 -4)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <path id="Path-2" data-name="Path" d="M8.14,27.314H6.07A2.07,2.07,0,0,1,4,25.244V20.07A2.07,2.07,0,0,1,6.07,18H22.628a2.07,2.07,0,0,1,2.07,2.07v5.175a2.07,2.07,0,0,1-2.07,2.07h-2.07" transform="translate(-4 -10.756)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <rect id="Rect" width="11.706" height="8.584" transform="translate(4.682 12.409)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="29" height="29" viewBox="0 0 29 29">
+  <g id="Circle_Button" data-name="Circle Button" transform="translate(60 -13)">
+    <g id="Icon" transform="translate(-60 13)">
+      <rect id="Area" width="29" height="29" fill="#fcfcfc" opacity="0"/>
+      <g id="Icon-2" data-name="Icon" transform="translate(1.191 1.191)">
+        <circle id="Path" cx="3.575" cy="3.575" r="3.575" transform="translate(9.534 9.534)" fill="none" stroke="#535252" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.667"/>
+        <path id="Path-2" data-name="Path" d="M22.76,17.517a1.967,1.967,0,0,0,.393,2.169l.071.071a2.385,2.385,0,1,1-3.373,3.372l-.071-.071a1.982,1.982,0,0,0-3.36,1.406v.2a2.383,2.383,0,1,1-4.766,0v-.107a1.966,1.966,0,0,0-1.287-1.8,1.967,1.967,0,0,0-2.169.393l-.071.071a2.385,2.385,0,1,1-3.372-3.373l.071-.071A1.982,1.982,0,0,0,3.42,16.42h-.2a2.383,2.383,0,1,1,0-4.766h.107a1.966,1.966,0,0,0,1.8-1.287A1.967,1.967,0,0,0,4.73,8.2l-.071-.071A2.385,2.385,0,1,1,8.032,4.754l.071.071a1.964,1.964,0,0,0,2.168.393h.1a1.964,1.964,0,0,0,1.191-1.8v-.2a2.384,2.384,0,1,1,4.768,0v.107a1.982,1.982,0,0,0,3.36,1.406l.071-.071a2.385,2.385,0,1,1,3.372,3.373l-.071.071a1.964,1.964,0,0,0-.393,2.168v.1a1.964,1.964,0,0,0,1.8,1.191h.2a2.384,2.384,0,1,1,0,4.768h-.107A1.964,1.964,0,0,0,22.76,17.517Z" transform="translate(-0.833 -0.833)" fill="none" stroke="#535252" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.667"/>
+      </g>
+    </g>
+  </g>
+</svg>
