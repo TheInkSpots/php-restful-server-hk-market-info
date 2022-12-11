@@ -183,18 +183,20 @@ function newOption(){
             jsonArr = JSON.parse(data);
             if(jsonArr.length > 0){
                 let typeOptArr = $.unique(jsonArr.map(x => x[colType]).sort());
+
+               
                 typeOptArr.forEach((x) => {
                     $("#viewRecordList").append('<option value="' + x + '">' + x + '</option>');
                 });
-                let districtOptArr = $.unique(jsonArr.map(x => x[colDistrict]).sort());
+
+                let districtOptArr = $.unique(jsonArr.map(x => x[colDistrict])).sort();
                 districtOptArr.forEach((x) => {
                     $("#serviceUnitList").append('<option value="' + x + '">' + x + '</option>');
                 });
-                let regionOptArr = $.unique(jsonArr.map(x => x[colRegion]).sort());
+                let regionOptArr = $.unique(jsonArr.map(x => x[colRegion])).sort();
                 regionOptArr.forEach((x) => {
                     $("#formStatusList").append('<option value="' + x + '">' + x + '</option>');
                 });
-                console.log(districtOptArr);
             }
         }
     }
