@@ -25,35 +25,6 @@
         array_shift($this->urlSegments); // [0] = null, poped it.
         $service = array_shift($this->urlSegments); // get 1st segment
         $service = lcfirst($service);  // replace substring[0] to lowercase (useless)
-        // var_dump($service); die;
-        // $service2 = array_shift($this->urlSegments); 
-        // var_dump($service2);
-        // die;
-        // $allowed_path = ['js', 'images', '', ''];
-        // $allowed_type = ['js', 'jpg', 'png'];
-
-        // $path_route = [
-        //     'js' => 'javascript',
-        //     'img' => 'images',
-        // ];
-
-        // $is_valid = false;
-        // for ($j=0; j<$allowed_path.length; j++) {
-        //     if ($allowed_path[$j] === $service) {
-        //         $is_valid = true;
-        //     }
-        // }
-
-        // if (!$is_valid) 
-        //     exit;
-
-        // for ($i=0; i<$allowed_type.length; i++) {
-        //     if ($service === $allowed_type) {
-        //         $resourseName = array_shift($this->urlSegments);
-        //         echo file_get_contents(__DIR__."".$service.$resourseName.$allowed_type[i]);
-        //         exit;
-        //     }
-        // }
 
         if($service === 'js'){
             $resourseName = array_shift($this->urlSegments);

@@ -23,7 +23,7 @@ class Api {
         if(isset($_GET['$filter']))
             $filter = $_GET['$filter'];
         else
-        $filter = null;
+            $filter = null;
         $rs = $this->sqlQuery($tableName, $filter);
         echo $rs;
     }
@@ -118,6 +118,7 @@ class Api {
             exit;
         }
     }
+
     function sqlManage($parameters, $method){
         require_once 'db.php';
 
