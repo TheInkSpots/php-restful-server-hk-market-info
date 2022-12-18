@@ -31,20 +31,20 @@ var defaltLan = "eng";
 
 function changeLan(curLangu){
 
-    let url = '';
-    let method = 'GET';
-    url = "/config/language_config.json";
-    console.log(method + ` initOptionData  ${url}`);
-    xhttp.open(method, url, true);
-    xhttp.onreadystatechange = () => {
-        console.log(xhttp.responseText);
-        JSON.parse(xhttp.responseText);
-    };
-    xhttp.send();
+    // let url = '';
+    // let method = 'GET';
+    // url = "/config/language_config.json";
+    // console.log(method + ` initOptionData  ${url}`);
+    // xhttp.open(method, url, true);
+    // xhttp.onreadystatechange = () => {
+    //     console.log(xhttp.responseText);
+    //     var jsonLan = JSON.parse(xhttp.responseText);
+    // };
+    // xhttp.send();
 
 
-    console.log('lan chage', curLangu);
-    console.log('lan json', jsonLan);
+    // console.log('lan chage', curLangu);
+    // console.log('lan json', jsonLan);
     if(defaltLan !== curLangu){
         if(curLangu !== 'eng'){
 

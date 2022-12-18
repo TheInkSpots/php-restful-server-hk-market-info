@@ -15,7 +15,7 @@ function editTwitchRecord(recordID) {
     $("#new_contact1" + recordID).prop('readonly', false);
     $("#new_contact2" + recordID).prop('readonly', false);
 
-    $("#new_nos_stall" + recordID).prop('disabled', false);
+    $("#new_nos_stall" + recordID).prop('readonly', false);
     $("#new_Address_" + recordID).prop('disabled', false);
     $("#new_business_hour" + recordID).prop('disabled', false);
     $("#new_coordinate_" + recordID).prop('disabled', false);
@@ -36,7 +36,7 @@ function saveEditTwitchRecord(recordID) {
     let new_business_hour = $("#new_business_hour" + recordID).val();
     let new_coordinate_ = $("#new_coordinate_" + recordID).val();
     let new_nos_stall = $("#new_nos_stall" + recordID).val();
-    if (new_region != "" || new_district != "" || new_market != "" || new_type != "" || new_contact1 != "" || new_Address_ != "" || new_business_hour != "" || new_nos_stall !='') {
+    if (new_region != "" || new_district != "" || new_market != "" || new_type != "" || new_contact1 != "" || new_Address_ != "" || new_business_hour != "" ) {
         dataVars[colRegion] = new_region;
         dataVars[colDistrict] = new_district;
         dataVars[colMarket] = new_market;
@@ -53,13 +53,14 @@ function saveEditTwitchRecord(recordID) {
         //var mapID = document.getElementById("modalMapID2").value;
         var url = "http://127.0.0.1:8081/api/marketInfo("+ recordID + ')';
         console.log (url , `\n${JSON.stringify(dataVars)}`);
+
         xhttp.open("PUT", url, true);  // true=>asynchronous, false=>synchronous
         xhttp.onreadystatechange = showDeleteResult;
         xhttp.send(JSON.stringify(dataVars));
         console.log('goDelete');
 
     } else {
-        alert('請填寫資料...');
+        $("#statusStr").html("<img src='/photo/reddot.jpg' width=15px></img><t font-size=17px>input cannot be epmty...</t>");
     }
 
 }
@@ -68,7 +69,11 @@ function initOptionData(){
     $("#viewRecordList").empty();
     $("#serviceUnitList").empty();
     $("#formStatusList").empty();
+
     $("#viewRecordList").prepend(new Option('All', ''));
+    $("#serviceUnitList").prepend(new Option('All', ''));
+    $("#formStatusList").prepend(new Option('All', ''));
+
     let url = '';
     let method = 'GET';
     url = "http://127.0.0.1:8081/api/marketInfo?$filter=id [gt] 0";
@@ -84,8 +89,6 @@ function newOption(){
             jsonArr = JSON.parse(data);
             if(jsonArr.length > 0){
                 let typeOptArr = $.unique(jsonArr.map(x => x[colType]).sort());
-
-               
                 typeOptArr.forEach((x) => {
                     $("#viewRecordList").append('<option value="' + x + '">' + x + '</option>');
                 });
@@ -121,13 +124,17 @@ function startSearch(str){
     if(filterType != '' && filterType != 'All'){
         url += ` [and] ${colType} [eq] '${filterType}'`;
     }
-   if(filterDistrict !=''){
+    if(filterDistrict !='' && filterDistrict != 'All'){
         url += ` [and] ${colDistrict} [eq] '${filterDistrict}'`;
     }
-    if(filterRegion != ''){
+    if(filterRegion != '' && filterRegion != 'All' && filterRegion != 'Hong Kong & Islands'){
         url += ` [and] ${colRegion} [eq] '${filterRegion}'`;
     }
-    if(filterStallStart != ''){
+    if(filterRegion == 'Hong Kong & Islands'){
+        url += ` [and] ${colRegion} [like] '%Hong Kong%'`;
+    }
+
+    if(filterStallStart != '' ){
         url += ` [and] new_nos_stall [ge] '${filterStallStart}'`;
     }
     if(filterStallEnd != ''){
@@ -146,17 +153,31 @@ function updatePage(){
     if(xhttp.readyState==4){
         if(xhttp.status==200){
             var data = xhttp.responseText;
-          //  console.log(data);
-            jsonArr = JSON.parse(data);
-            let displayArea = document.getElementById('twitchRecordTable');
-            
-
-           // tableAppend = '<table border= "1"> ';
-            //tableAppend += '<tr><th>ID</th><th>Region_e</th><th>Market_e</th><th>Address_e</th><th>Business_Hours_e</th><th>nos_stall</th></tr>';
+            console.log(data);
             tableAppend = '';
-            if(jsonArr.length > 0){
-                tableAppend += `<div>Record(s) count(${jsonArr.length})</div>`;
-                jsonArr.forEach(showRecord);
+            if(data != 'No Result[]'){
+                jsonArr = JSON.parse(data);
+                let displayArea = document.getElementById('twitchRecordTable');
+                
+
+                 // tableAppend = '<table border= "1"> ';
+                //tableAppend += '<tr><th>ID</th><th>Region_e</th><th>Market_e</th><th>Address_e</th><th>Business_Hours_e</th><th>nos_stall</th></tr>';
+                tableAppend = '';
+                if(jsonArr.length > 0){
+                    tableAppend += `<div>Record(s) count(${jsonArr.length})</div>`;
+                    jsonArr.forEach(showRecord);
+                }
+                else{
+                    tableAppend += '<table class="table table-longer table-bordered" style="margin-top: 20px; text-align: center;">';
+                    tableAppend += '<tr style="text-align: center;">';
+                    tableAppend += '<td colspan="7">';
+                    tableAppend += 'No Record';
+                    tableAppend += '</td>';
+                    tableAppend += '</tr>';
+                    tableAppend += '</table>';
+                }
+                //html += a;
+                //tableAppend += '</table>';
             }
             else{
                 tableAppend += '<table class="table table-longer table-bordered" style="margin-top: 20px; text-align: center;">';
@@ -167,9 +188,6 @@ function updatePage(){
                 tableAppend += '</tr>';
                 tableAppend += '</table>';
             }
-            //html += a;
-            //tableAppend += '</table>';
-            
             $('#twitchRecordTable').empty();
             $("#twitchRecordTable").append(tableAppend);
             //displayArea.innerHTML = tableAppend;
@@ -327,3 +345,8 @@ function showDeleteResult() {
     console.log('showDeleteResult');
 }
 
+function showGoogleMap(address){
+
+    $('#mapDetails').modal('show');
+    $('#mapDetails .mapouter iframe').attr('src', `https://maps.google.com/maps?q=${encodeURI(address)}&t=&z=13&ie=UTF8&iwloc=&output=embed`)
+}
